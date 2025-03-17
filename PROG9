@@ -1,0 +1,96 @@
+using UnityEngine;
+using System.Collections;
+public class CoinCollect : MonoBehaviour
+{
+    public static int totalCoins = 0; // Points per coin
+
+
+    void Awake()
+    {
+        //Make Collider as trigger
+        GetComponent<Collider>().isTrigger = true;
+        Debug.Log("Awake in CoinCollect");
+    }
+    void OnTriggerEnter(Collider other)
+    {
+        Debug.Log("OnTriggerEnter in CoinCollect");
+        if (other.CompareTag("Player")) // Ensure only player can collect coins
+        {
+
+
+            Debug.Log("Destroying coin...");
+            // StartCoroutine(DestroyCoin()); // Destroy the coin after collection
+            Destroy(gameObject);
+            totalCoins++;
+            Debug.Log("Coin collected!" + " Total Coins: " + totalCoins);
+        }
+    }
+
+
+}
+
+
+
+
+
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+
+public class SceneLoader : MonoBehaviour
+{
+    public static SceneLoader instance; // Singleton instance
+
+
+    void Awake()
+    {
+        // Initialize the singleton instance
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else if (instance != this)
+        {
+            Destroy(gameObject); // Ensure there's only one instance
+        }
+    }
+    public void LoadNextLevel()
+    {
+        Debug.Log("Loading next scene...");
+        int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
+        SceneManager.LoadScene(nextSceneIndex);
+    }
+}
+
+
+using UnityEngine;
+using TMPro; // Required for TextMeshPro UI
+
+
+public class ScoreManager : MonoBehaviour
+{
+    public TextMeshProUGUI scoreText; // Reference to the UI text component
+    private int totalCoinsInScene;
+    void Start()
+    {
+        totalCoinsInScene = GameObject.FindGameObjectsWithTag("Coin").Length;
+    }
+    void Update()
+    {
+
+
+        Debug.Log("ScoreManager Update");
+        if (scoreText.text != "Score: " + CoinCollect.totalCoins.ToString())
+        {
+            Debug.Log("Updating score...");
+            scoreText.text = "Score: " + CoinCollect.totalCoins.ToString();
+        }
+        if (CoinCollect.totalCoins == totalCoinsInScene)
+        {
+            Debug.Log("Calling LoadNextLevel...");
+            CoinCollect.totalCoins = 0;
+            SceneLoader.instance.LoadNextLevel();
+        }
+    }
+}
+
